@@ -1,45 +1,49 @@
 import cv2
+import colorama
+from colorama import Fore, init
 from qreader import QReader
 from urllib.parse import urlparse
 
 def analyze_qr_data(data: str) -> str:
     if not data:
-        return "No QR code data found."
+        return Fore.RED + "Не получилось найти никаких данных в QR-коде"
 
     parsed = urlparse(data)
 
     if parsed.scheme in ("http", "https") and parsed.netloc:
         if parsed.scheme == "http":
-            return f"Dangerous: uses insecure HTTP URL -> {data}"
-        return f"Safe-looking: HTTPS URL -> {data}"
+            return Fore.RED + f"Опасно: использует незащищенный протокол - HTTP ; URL -> {data}"
+        return Fore.GREEN + f"Выглядит безопасно: протокол - HTTPS ; URL -> {data}"
 
     if parsed.scheme and parsed.scheme not in ("http", "https"):
-        return f"Dangerous: suspicious protocol '{parsed.scheme}' -> {data}"
+        return Fore.RED + f"Опасно: подозрительный протокол '{parsed.scheme}' -> {data}"
 
-    return f"Unknown / possibly unsafe: not a normal URL -> {data}"
+    return Fore.RED + f"Неизвестный / вероятно небезопасно: необычный URL -> {data}"
 
 def scan_qr(image_path: str):
+    init()
     qreader = QReader()
 
     image = cv2.imread(image_path)
     if image is None:
-        print("Could not open image.")
+        print(Fore.RED + "Не смог открыть изображение")
+        #print("Could not open image.")
         return
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     decoded_text = qreader.detect_and_decode(image=image)
 
     if not decoded_text:
-        print("No QR code detected.")
+        print(Fore.RED + "Не смог распознать QR-код")
         return
 
     for i, data in enumerate(decoded_text, start=1):
         if data:
-            print(f"QR {i}: {data}")
+            print(f"QR-код {i}: " + Fore.YELLOW + f"{data}")
             print(analyze_qr_data(data))
         else:
-            print(f"QR {i}: empty result")
+            print(Fore.RED + f"QR-код {i}: пустой результат")
 
 if __name__ == "__main__":
-    path = input("Enter image path: ").strip()
+    path = input("Введите путь к изображению QR-кода: ").strip()
     scan_qr(path)
