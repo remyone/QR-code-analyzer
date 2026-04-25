@@ -3,6 +3,7 @@ import colorama
 from colorama import Fore, init
 from qreader import QReader
 from urllib.parse import urlparse
+from qrdet import QRDetector
 
 def analyze_qr_data(data: str) -> str:
     if not data:
@@ -47,3 +48,4 @@ def scan_qr(image_path: str):
 if __name__ == "__main__":
     path = input("Введите путь к изображению QR-кода: ").strip()
     scan_qr(path)
+    char : str = str(input("Нажмите любую кнопку + enter для выхода из программы: "))
